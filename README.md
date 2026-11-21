@@ -79,5 +79,6 @@ shapes (captured into `internal/uxwing/testdata`) without touching the network.
 
 ## Licence
 
-The code is MIT licensed. The icons belong to [UXWing](https://uxwing.com) and are free to use
-under their [licence](https://uxwing.com/license/); this tool only downloads them for you.
+The code is [MPL-2.0](LICENSE) licensed. The icons belong to
+[UXWing](https://uxwing.com) and are free to use under their
+[licence](https://uxwing.com/license/); this tool only downloads them for you.
