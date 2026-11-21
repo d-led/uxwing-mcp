@@ -1,0 +1,10 @@
+# build output
+/bin/
+/dist/
+/.goreleaser-dist/
+
+# CI-generated test reports
+/build/
+
+# downloaded icons
+/icons/

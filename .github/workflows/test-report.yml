@@ -1,0 +1,27 @@
+name: test-report
+
+# Turns the go test results uploaded by the ci workflow into a check run.
+# This lives in its own workflow so that pull requests from forks, which run
+# with a read-only token, still get a test report.
+on:
+  workflow_run:
+    workflows: ['ci']
+    types:
+      - completed
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion != 'cancelled'
+    steps:
+      - uses: dorny/test-reporter@v3.0.0
+        with:
+          artifact: test-results
+          name: go tests
+          path: build/test-results.json
+          reporter: golang-json

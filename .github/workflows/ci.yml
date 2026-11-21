@@ -1,0 +1,143 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: gofmt
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [[ -n "$unformatted" ]]; then
+            echo "$unformatted"
+            echo "gofmt: the files above need formatting" >&2
+            exit 1
+          fi
+      - name: go vet
+        run: go vet ./...
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.13.1
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Run tests
+        run: bash scripts/test.sh --json
+      - name: Coverage summary
+        if: always()
+        run: |
+          {
+            echo "### Coverage"
+            echo '```'
+            go tool cover -func=build/coverage.out | tail -n 1
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      # The test-report workflow turns this artifact into a check run, which
+      # keeps working for pull requests from forks (read-only token there).
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: test-results
+          path: |
+            build/test-results.json
+            build/coverage.out
+
+  crap:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Install go-crap
+        run: go install github.com/padiazg/go-crap@latest
+      - name: CRAP gate (every function at most 10)
+        run: bash scripts/crap.sh
+
+  # "Latest" binaries for the main branch: every push to main uploads fresh
+  # per-platform binaries as build artifacts (not releases). Tagged releases
+  # are handled by the goreleaser workflow.
+  latest-binaries:
+    needs: [lint, test, crap]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            artifact: uxwing-mcp-linux-amd64
+          - goos: linux
+            goarch: arm64
+            artifact: uxwing-mcp-linux-arm64
+          - goos: windows
+            goarch: amd64
+            artifact: uxwing-mcp-windows-amd64
+            ext: .exe
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Build binary
+        run: |
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 \
+            go build -trimpath \
+              -ldflags "-s -w -X main.version=$(git describe --tags --always --dirty)" \
+              -o dist/uxwing-mcp${{ matrix.ext }} .
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/uxwing-mcp${{ matrix.ext }}
+
+  latest-macos-universal:
+    needs: [lint, test, crap]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Build darwin amd64
+        run: |
+          GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 \
+            go build -trimpath \
+              -ldflags "-s -w -X main.version=$(git describe --tags --always --dirty)" \
+              -o dist/uxwing-mcp-amd64 .
+      - name: Build darwin arm64
+        run: |
+          GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 \
+            go build -trimpath \
+              -ldflags "-s -w -X main.version=$(git describe --tags --always --dirty)" \
+              -o dist/uxwing-mcp-arm64 .
+      - name: Merge universal binary
+        run: lipo -create -output dist/uxwing-mcp dist/uxwing-mcp-amd64 dist/uxwing-mcp-arm64
+      - uses: actions/upload-artifact@v7
+        with:
+          name: uxwing-mcp-macos-universal
+          path: dist/uxwing-mcp
