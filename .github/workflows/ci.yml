@@ -30,7 +30,10 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
-          version: v2.13.1
+          # Built from source with the toolchain from go.mod: a prebuilt binary
+          # can lag behind and fails to read the newer export data format.
+          version: latest
+          install-mode: goinstall
 
   test:
     runs-on: ubuntu-latest
