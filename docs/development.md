@@ -86,6 +86,10 @@ run on `main` without a login:
 https://nightly.link/d-led/uxwing-mcp/workflows/ci/main/<artifact-name>.zip
 ```
 
+Artifacts are named `uxwing-mcp-<goos>-<goarch>` (plus `uxwing-mcp-darwin-universal`) and never
+carry the `.exe` suffix, because the artifact name is the last path segment of the link. Keep the
+names stable: a rename breaks the README URL until nightly.link picks up the next run.
+
 `.github/workflows/goreleaser.yml` builds versioned releases from `v*.*.*` tags with
 `.goreleaser.yaml`. The binary's version comes from `-X main.version`, set by `scripts/build.sh` and
 GoReleaser.
