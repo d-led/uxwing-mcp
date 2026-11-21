@@ -153,6 +153,36 @@ func textOf(result *mcp.CallToolResult) string {
 	return strings.Join(parts, "\n")
 }
 
+func TestServerTellsClientsToReadTheUXWingLicence(t *testing.T) {
+	session := newTestSession(t, &fakeService{}, t.TempDir())
+
+	instructions := session.InitializeResult().Instructions
+	if !strings.Contains(instructions, "https://uxwing.com/license/") {
+		t.Errorf("server instructions %q do not point at the UXWing licence", instructions)
+	}
+}
+
+func TestEveryAnswerPointsAtTheUXWingLicence(t *testing.T) {
+	service := &fakeService{
+		icons:   robotIcons(),
+		page:    robotPage(),
+		preview: pngFile,
+		files:   map[uxwing.Format][]byte{uxwing.FormatSVG: svgFile},
+	}
+	session := newTestSession(t, service, t.TempDir())
+
+	invocations := map[string]map[string]any{
+		"search_icons":  {"query": "robot"},
+		"get_icon":      {"slug": "robot-icon"},
+		"download_icon": {"slug": "robot-icon"},
+	}
+	for name, args := range invocations {
+		if text := textOf(callTool(t, session, name, args)); !strings.Contains(text, "https://uxwing.com/license/") {
+			t.Errorf("%s answered %q without the licence link", name, text)
+		}
+	}
+}
+
 func TestServerOffersSearchPreviewAndDownload(t *testing.T) {
 	session := newTestSession(t, &fakeService{}, t.TempDir())
 

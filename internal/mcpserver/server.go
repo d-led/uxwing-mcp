@@ -25,8 +25,10 @@ type Saver interface {
 const instructions = `UXWing icon tools. search_icons lists free icons with their uxwing.com page
 addresses, preview images and links the user can open. get_icon shows one icon: its page,
 the formats UXWing serves and the variations of the same idea. download_icon writes the
-SVG and PNG files into a directory. Icons are free under the UXWing licence
-(https://uxwing.com/license/).`
+SVG and PNG files into a directory.
+
+The icons belong to UXWing and come with their own licence. Read https://uxwing.com/license/
+before you ship them, and give the credit that licence asks for.`
 
 // NewServer builds the MCP server with every icon tool registered. Downloads
 // land in defaultDir unless a call asks for another directory.

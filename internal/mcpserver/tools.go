@@ -106,7 +106,7 @@ func (t *tools) search(ctx context.Context, _ *mcp.CallToolRequest, args SearchA
 		return nil, SearchOutput{}, err
 	}
 
-	content := []mcp.Content{&mcp.TextContent{Text: describeIcons(icons)}}
+	content := answer(describeIcons(icons))
 	content = append(content, t.previews(ctx, icons, previewCount(args.Previews))...)
 	return &mcp.CallToolResult{Content: content}, SearchOutput{Icons: icons}, nil
 }
@@ -130,7 +130,7 @@ func (t *tools) getIcon(ctx context.Context, _ *mcp.CallToolRequest, args GetIco
 		Related: page.Related,
 	}
 
-	content := []mcp.Content{&mcp.TextContent{Text: describeIcon(output)}}
+	content := answer(describeIcon(output))
 	if png, ok := uxwing.FindAsset(page.Assets, uxwing.FormatPNG); ok {
 		content = append(content, t.preview(ctx, png.URL)...)
 	}
@@ -154,7 +154,7 @@ func (t *tools) download(ctx context.Context, _ *mcp.CallToolRequest, args Downl
 	}
 
 	output := DownloadOutput{Slug: slug, Files: savedFiles(saved)}
-	content := []mcp.Content{&mcp.TextContent{Text: describeSaved(output)}}
+	content := answer(describeSaved(output))
 	content = append(content, savedPNG(saved)...)
 	return &mcp.CallToolResult{Content: content}, output, nil
 }
@@ -295,4 +295,13 @@ func describeSaved(output DownloadOutput) string {
 		lines[i] = fmt.Sprintf("%s — %s, %d bytes", file.Path, file.Format, file.Bytes)
 	}
 	return strings.Join(lines, "\n")
+}
+
+// licenceNote ends every answer: the icons are not this tool's to give away,
+// and their licence is what the user has to follow.
+const licenceNote = "Icons belong to UXWing — licence: https://uxwing.com/license/"
+
+// answer is the content of a result: the answer itself, then the licence note.
+func answer(text string) []mcp.Content {
+	return []mcp.Content{&mcp.TextContent{Text: text + "\n\n" + licenceNote}}
 }
