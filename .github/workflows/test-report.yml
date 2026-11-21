@@ -23,5 +23,7 @@ jobs:
         with:
           artifact: test-results
           name: go tests
-          path: build/test-results.json
+          # The artifact keeps only the common parent directory, so the files
+          # sit at its root.
+          path: test-results.json
           reporter: golang-json
