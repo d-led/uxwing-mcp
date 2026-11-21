@@ -3,9 +3,19 @@
 Free [UXWing](https://uxwing.com) icons for your MCP client: search them, **see the previews**,
 open them on the website, and download the SVG and PNG files — all from the chat.
 
-## Downloads
+## Install
 
-Binaries from the newest `main` build, pure Go with cgo disabled:
+With Go 1.27 or newer:
+
+```sh
+go install github.com/d-led/uxwing-mcp@latest
+```
+
+That puts `uxwing-mcp` in `$(go env GOPATH)/bin`, which is on your `PATH` if you have Go set up.
+
+### Prebuilt binaries
+
+No Go at hand? Take the newest `main` build — pure Go, built with cgo disabled:
 
 | Platform | Download |
 | --- | --- |
@@ -14,8 +24,8 @@ Binaries from the newest `main` build, pure Go with cgo disabled:
 | Windows x86_64 | [`uxwing-mcp-windows-amd64.exe`](https://nightly.link/d-led/uxwing-mcp/workflows/ci/main/uxwing-mcp-windows-amd64.zip) |
 | macOS, Apple silicon and Intel | [`uxwing-mcp-darwin-universal`](https://nightly.link/d-led/uxwing-mcp/workflows/ci/main/uxwing-mcp-darwin-universal.zip) |
 
-Each link is a zip holding the binary: unzip it, `chmod +x` it on Linux and macOS, then register it
-with your client. Versioned releases are on the [releases page](https://github.com/d-led/uxwing-mcp/releases).
+Each link is a zip holding the binary: unzip it, `chmod +x` it on Linux and macOS, and move it
+somewhere on your `PATH`. Versioned releases are on the [releases page](https://github.com/d-led/uxwing-mcp/releases).
 
 ## Add it to your MCP client
 
@@ -69,11 +79,7 @@ the server finds the file anyway.
 The code is [MPL-2.0](LICENSE). The icons belong to [UXWing](https://uxwing.com) and are free to
 use under their [licence](https://uxwing.com/license/); this tool only downloads them for you.
 
-## Building from source
-
-```sh
-go install github.com/d-led/uxwing-mcp@latest
-```
+## Development
 
 Working on the server itself? [docs/development.md](docs/development.md) has the scripts, the
 layout, the testing approach and the CI setup.

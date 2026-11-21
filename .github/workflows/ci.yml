@@ -92,13 +92,11 @@ jobs:
         include:
           - goos: linux
             goarch: amd64
-            file: uxwing-mcp-linux-amd64
           - goos: linux
             goarch: arm64
-            file: uxwing-mcp-linux-arm64
           - goos: windows
             goarch: amd64
-            file: uxwing-mcp-windows-amd64.exe
+            ext: .exe
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
@@ -110,11 +108,13 @@ jobs:
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 \
             go build -trimpath \
               -ldflags "-s -w -X main.version=$(git describe --tags --always --dirty)" \
-              -o dist/${{ matrix.file }} .
+              -o dist/uxwing-mcp-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} .
+      # The artifact name is what the nightly.link URL in the README ends with,
+      # so it never carries the .exe suffix.
       - uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.file }}
-          path: dist/${{ matrix.file }}
+          name: uxwing-mcp-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/uxwing-mcp-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
 
   latest-macos-universal:
     needs: [lint, test, crap]
