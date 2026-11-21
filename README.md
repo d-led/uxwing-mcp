@@ -1,84 +1,80 @@
 # uxwing-mcp
 
-An [MCP](https://modelcontextprotocol.io) server for [UXWing](https://uxwing.com) icons: search
-them, look at previews, open the icon on the website, and download the SVG and PNG files.
+Free [UXWing](https://uxwing.com) icons for your MCP client: search them, **see the previews**,
+open them on the website, and download the SVG and PNG files — all from the chat.
 
-## Tools
+## Downloads
 
-| Tool | What it does |
+Binaries from the newest `main` build, pure Go with cgo disabled:
+
+| Platform | Download |
 | --- | --- |
-| `search_icons` | Searches uxwing.com. Returns each icon's slug, title, page address and a 512×512 PNG preview, and attaches the preview images so the user can see them. |
-| `get_icon` | Shows one icon: its page address, the formats UXWing serves, a PNG preview, and the variations UXWing offers for the same idea (for example the black or outline drawing). |
-| `download_icon` | Writes the SVG and/or PNG files into a directory and reports the saved paths. Returns the downloaded PNG as a preview. |
+| Linux x86_64 | [`uxwing-mcp-linux-amd64`](https://nightly.link/d-led/uxwing-mcp/workflows/ci/main/uxwing-mcp-linux-amd64.zip) |
+| Linux arm64 | [`uxwing-mcp-linux-arm64`](https://nightly.link/d-led/uxwing-mcp/workflows/ci/main/uxwing-mcp-linux-arm64.zip) |
+| Windows x86_64 | [`uxwing-mcp-windows-amd64.exe`](https://nightly.link/d-led/uxwing-mcp/workflows/ci/main/uxwing-mcp-windows-amd64.zip) |
+| macOS, Apple silicon and Intel | [`uxwing-mcp-darwin-universal`](https://nightly.link/d-led/uxwing-mcp/workflows/ci/main/uxwing-mcp-darwin-universal.zip) |
 
-Formats: UXWing serves **SVG** and **PNG** only. The page sometimes comments its PNG button out,
-while the PNG file itself is still served; the server therefore derives the missing format from
-the file the page does offer.
+Each link is a zip holding the binary: unzip it, `chmod +x` it on Linux and macOS, then register it
+with your client. Versioned releases are on the [releases page](https://github.com/d-led/uxwing-mcp/releases).
 
-## Install
+## Add it to your MCP client
 
-```sh
-git clone https://github.com/d-led/uxwing-mcp
-cd uxwing-mcp
-scripts/build.sh          # produces bin/uxwing-mcp
-```
-
-or
+The binary registers itself and merges with the servers already in the file:
 
 ```sh
-go install github.com/d-led/uxwing-mcp@latest
+uxwing-mcp install --client vscode      # VS Code user profile, all workspaces
+uxwing-mcp install --client workspace   # this folder: .vscode/mcp.json
+uxwing-mcp install --client claude      # Claude Desktop
+
+uxwing-mcp uninstall --client vscode    # remove the entry again
 ```
 
-## Use
+`install` records the absolute path of the binary and the icon directory (the `UXWING_ICON_DIR`
+value, else `icons`). `--name` picks another entry name, `--dir` another download directory.
+Running it twice changes nothing, and a config that is not valid JSON is left untouched.
 
-The server speaks MCP on stdin/stdout. Point your client at the binary:
+Prefer to edit the config by hand? Add an entry to the `servers` section (`mcpServers` for Claude
+Desktop):
 
 ```json
 {
   "servers": {
     "uxwing": {
       "type": "stdio",
-      "command": "/absolute/path/to/bin/uxwing-mcp",
+      "command": "/absolute/path/to/uxwing-mcp",
       "env": { "UXWING_ICON_DIR": "/absolute/path/to/project/assets/icons" }
     }
   }
 }
 ```
 
-`UXWING_ICON_DIR` is where downloads land unless a `download_icon` call names its own `dir`.
-It defaults to `icons` in the working directory.
+## What you can ask for
 
-`uxwing-mcp --version` prints the build version.
-
-## Development
-
-Every task is a script:
-
-| Script | Task |
+| Tool | What you get |
 | --- | --- |
-| `scripts/build.sh` | Build `bin/uxwing-mcp` with the git version stamped in. |
-| `scripts/test.sh` | Run the tests with the race detector and write `build/coverage.out`. `--json` writes `build/test-results.json` for the CI reporter. |
-| `scripts/lint.sh` | gofmt, go vet, staticcheck and golangci-lint when installed. `--install` installs them. |
-| `scripts/crap.sh` | CRAP gate: every function must score at most 10 (go-crap). |
-| `scripts/ci.sh` | Everything CI runs, in the same order. |
+| `search_icons` | Icons matching your words, each with its uxwing.com page address and a 512×512 PNG preview shown right in the chat. |
+| `get_icon` | One icon in detail: page address, the formats UXWing serves, a preview, and the variations of the same idea (black, outline, …). |
+| `download_icon` | The SVG and/or PNG files written into your icon directory, with the saved paths and a preview of what was written. |
 
-CI (`.github/workflows/ci.yml`) runs lint, tests and the CRAP gate on every push and pull
-request, publishes the test results as a check run (`.github/workflows/test-report.yml`), and
-uploads fresh binaries for `main`. Tagging `v*.*.*` builds the release with GoReleaser.
+UXWing serves **SVG and PNG**. When the site hides its PNG button but still serves the PNG file,
+the server finds the file anyway.
 
-## Layout
+## Where icons are saved
 
-```
-main.go                    wiring: client, tools, stdio transport
-internal/uxwing            the site: parsing, HTTP, downloads, file store
-internal/mcpserver         the MCP tools and their handlers
-```
-
-The parsers are pure functions over a parsed HTML document, so the tests pin the real page
-shapes (captured into `internal/uxwing/testdata`) without touching the network.
+`download_icon` writes into the directory the server was started with: `UXWING_ICON_DIR`, else
+`icons` in the working directory. A call can also name its own `dir`.
 
 ## Licence
 
-The code is [MPL-2.0](LICENSE) licensed. The icons belong to
-[UXWing](https://uxwing.com) and are free to use under their
-[licence](https://uxwing.com/license/); this tool only downloads them for you.
+The code is [MPL-2.0](LICENSE). The icons belong to [UXWing](https://uxwing.com) and are free to
+use under their [licence](https://uxwing.com/license/); this tool only downloads them for you.
+
+## Building from source
+
+```sh
+go install github.com/d-led/uxwing-mcp@latest
+```
+
+Working on the server itself? [docs/development.md](docs/development.md) has the scripts, the
+layout, the testing approach and the CI setup.
+
