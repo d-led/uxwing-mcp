@@ -78,8 +78,9 @@ jobs:
       - name: CRAP gate (every function at most 10)
         run: bash scripts/crap.sh
 
-  # "Latest" binaries for the main branch: every push to main uploads fresh
-  # per-platform binaries as build artifacts (not releases). Tagged releases
+  # Binaries for the main branch: every push to main uploads fresh per-platform
+  # binaries as workflow artifacts. The README links them through nightly.link,
+  # which serves the artifact of the newest run without a login. Tagged releases
   # are handled by the goreleaser workflow.
   latest-binaries:
     needs: [lint, test, crap]
@@ -91,14 +92,13 @@ jobs:
         include:
           - goos: linux
             goarch: amd64
-            artifact: uxwing-mcp-linux-amd64
+            file: uxwing-mcp-linux-amd64
           - goos: linux
             goarch: arm64
-            artifact: uxwing-mcp-linux-arm64
+            file: uxwing-mcp-linux-arm64
           - goos: windows
             goarch: amd64
-            artifact: uxwing-mcp-windows-amd64
-            ext: .exe
+            file: uxwing-mcp-windows-amd64.exe
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
@@ -110,11 +110,11 @@ jobs:
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 \
             go build -trimpath \
               -ldflags "-s -w -X main.version=$(git describe --tags --always --dirty)" \
-              -o dist/uxwing-mcp${{ matrix.ext }} .
+              -o dist/${{ matrix.file }} .
       - uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.artifact }}
-          path: dist/uxwing-mcp${{ matrix.ext }}
+          name: ${{ matrix.file }}
+          path: dist/${{ matrix.file }}
 
   latest-macos-universal:
     needs: [lint, test, crap]
@@ -131,16 +131,16 @@ jobs:
           GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 \
             go build -trimpath \
               -ldflags "-s -w -X main.version=$(git describe --tags --always --dirty)" \
-              -o dist/uxwing-mcp-amd64 .
+              -o dist/uxwing-mcp-darwin-amd64 .
       - name: Build darwin arm64
         run: |
           GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 \
             go build -trimpath \
               -ldflags "-s -w -X main.version=$(git describe --tags --always --dirty)" \
-              -o dist/uxwing-mcp-arm64 .
+              -o dist/uxwing-mcp-darwin-arm64 .
       - name: Merge universal binary
-        run: lipo -create -output dist/uxwing-mcp dist/uxwing-mcp-amd64 dist/uxwing-mcp-arm64
+        run: lipo -create -output dist/uxwing-mcp-darwin-universal dist/uxwing-mcp-darwin-amd64 dist/uxwing-mcp-darwin-arm64
       - uses: actions/upload-artifact@v7
         with:
-          name: uxwing-mcp-macos-universal
-          path: dist/uxwing-mcp
+          name: uxwing-mcp-darwin-universal
+          path: dist/uxwing-mcp-darwin-universal
