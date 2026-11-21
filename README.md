@@ -3,7 +3,7 @@
 Free [UXWing](https://uxwing.com) icons for your MCP client: search them, **see the previews**,
 open them on the website, and download the SVG and PNG files — all from the chat.
 
-The icons are from UXWing, so read their [licence](https://uxwing.com/license/) before you ship
+The icons are from UXWing. Make sure to read their [licence](https://uxwing.com/license/) before you ship
 them. The tool only downloads the files for you.
 
 ## Install
