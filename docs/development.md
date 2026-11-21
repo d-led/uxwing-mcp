@@ -99,5 +99,6 @@ GoReleaser.
 1. Add the capability to `uxwing.Client` (with a test against the fake site).
 2. Add the method to the `mcpserver.Service` interface.
 3. Add args and output value types plus a handler in `internal/mcpserver/tools.go`, and register
-   the tool in `NewServer`.
+   the tool in `NewServer`. Build the result content with `answer(...)` so the UXWing licence note
+   travels with the answer.
 4. Test it through the protocol in `server_test.go`; run `scripts/ci.sh`.

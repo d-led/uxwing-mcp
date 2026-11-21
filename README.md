@@ -3,6 +3,9 @@
 Free [UXWing](https://uxwing.com) icons for your MCP client: search them, **see the previews**,
 open them on the website, and download the SVG and PNG files — all from the chat.
 
+The icons are from UXWing, so read their [licence](https://uxwing.com/license/) before you ship
+them. The tool only downloads the files for you.
+
 ## Install
 
 With Go 1.27 or newer:
@@ -69,6 +72,9 @@ Desktop):
 UXWing serves **SVG and PNG**. When the site hides its PNG button but still serves the PNG file,
 the server finds the file anyway.
 
+Every answer ends with a link to the [UXWing licence](https://uxwing.com/license/), so the terms
+stay in sight while you pick icons.
+
 ## Where icons are saved
 
 `download_icon` writes into the directory the server was started with: `UXWING_ICON_DIR`, else
@@ -76,8 +82,11 @@ the server finds the file anyway.
 
 ## Licence
 
-The code is [MPL-2.0](LICENSE). The icons belong to [UXWing](https://uxwing.com) and are free to
-use under their [licence](https://uxwing.com/license/); this tool only downloads them for you.
+The code in this repository is [MPL-2.0](LICENSE).
+
+The icons are not covered by that licence: they belong to [UXWing](https://uxwing.com), so read
+the [UXWing licence](https://uxwing.com/license/) before you use them and follow what it asks for
+(attribution, redistribution limits). This tool only downloads the files for you.
 
 ## Development
 
